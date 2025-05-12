@@ -3,4 +3,3 @@
 - Front End : React and Bootstrap
 - Back  End : Python and Django
 - Database  : MySQL
-
