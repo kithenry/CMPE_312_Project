@@ -324,4 +324,4 @@ Retrieves messages for a transaction.
   - Restrict `DELETE` and `PATCH` on `/api/user/` to the user’s own account.
   - Configure SMTP for email notifications (see `settings.py`).
 
-For issues, contact the backend developer or check the GitHub repository for updates.
+For issues, contact the me via my email or check the GitHub repository for updates.
