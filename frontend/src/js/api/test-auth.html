@@ -1,0 +1,30 @@
+<!-- src/test-auth.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Auth</title>
+</head>
+<body>
+    <h1>Test Authentication</h1>
+    <button onclick="testLogin()">Test Login</button>
+    <div id="result"></div>
+
+    <script type="module">
+        import { login } from './js/api/auth.js';
+
+        window.testLogin = async () => {
+            const resultDiv = document.getElementById('result');
+            try {
+                const email = 'test1@university.edu';
+                const password = 'password123';
+                const data = await login(email, password);
+                resultDiv.textContent = 'Login successful: ' + JSON.stringify(data);
+            } catch (error) {
+                resultDiv.textContent = 'Error: ' + error.message;
+            }
+        };
+    </script>
+</body>
+</html>
