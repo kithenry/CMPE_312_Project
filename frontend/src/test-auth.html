@@ -1,0 +1,37 @@
+<!-- src/test-auth.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test API Calls</title>
+    <base href="/src/">
+</head>
+<body>
+    <h1>Test API Calls</h1>
+    <button onclick="testLoginAndGetBooks()">Test Login and Get Books</button>
+    <div id="result"></div>
+
+    <script type="module">
+        import { login } from '/frontend/src/js/api/auth.js';
+        import { getBooks } from '/frontend/src/js/api/books.js';
+
+        window.testLoginAndGetBooks = async () => {
+            const resultDiv = document.getElementById('result');
+            try {
+                // First, log in
+                const email = 'test1@university.edu';
+                const password = 'password123';
+                const loginData = await login(email, password);
+                resultDiv.textContent = 'Login successful: ' + JSON.stringify(loginData);
+
+                // Then, fetch books
+                const books = await getBooks();
+                resultDiv.textContent += '\nBooks fetched: ' + JSON.stringify(books);
+            } catch (error) {
+                resultDiv.textContent = 'Error: ' + error.message;
+            }
+        };
+    </script>
+</body>
+</html>
