@@ -21,7 +21,8 @@ from chat.views import MessageViewSet
 from transactions.views import TransactionViewSet
 from users.views import UserViewSet
 from rest_framework.routers import DefaultRouter
-
+from .views import CustomLogoutView
+from .views import UserMeView
 
 router = DefaultRouter()
 router.register(r'books', BookViewSet)
@@ -32,7 +33,9 @@ router.register(r'user',UserViewSet)
 
 urlpatterns = [
     #path('admin/', admin.site.urls),
-    path('api/auth/', include('dj_rest_auth.urls')), # login, logout 
-    path('api/auth/registration/',include('dj_rest_auth.registration.urls')), # user registration 
+    path('api/auth/', include('dj_rest_auth.urls')), # login
+    path('api/auth/registration/',include('dj_rest_auth.registration.urls')), # user registration
+    path('api/auth/logout',CustomLogoutView.as_view(), name='logout'),
+    path('api/users/me/', UserMeView.as_view(), name='user-me'),
     path('api/', include(router.urls)),
 ]
