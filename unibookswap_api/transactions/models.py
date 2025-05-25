@@ -1,16 +1,24 @@
+# unibookswap/transactions/models.py
 from django.db import models
-from books.models import Book 
-from users.models import User 
+from users.models import User
+from books.models import Book
+import uuid
 
-# Create your models here.
 class Transaction(models.Model):
-    id = models.AutoField(primary_key=True)
-    buyer = models.ForeignKey(User, related_name='buyer', on_delete=models.CASCADE)
-    seller = models.ForeignKey(User, related_name='seller', on_delete=models.CASCADE)
-    book = models.ForeignKey(Book, on_delete=models.CASCADE)
-    type = models.CharField(max_length=20)
-    status = models.CharField(max_length=20)
-    rating = models.IntegerField(null=True)
-    feedback = models.CharField(max_length=500, null=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name='transactions')
+    buyer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='purchases')
+    seller = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sales')
+    type = models.CharField(max_length=20, choices=[('sale', 'Sale'), ('exchange', 'Exchange')], default='sale')
+    buyer_confirm = models.BooleanField(default=False)
+    seller_confirm = models.BooleanField(default=False)
+    full_confirm = models.BooleanField(default=False)
+    
     created_at = models.DateTimeField(auto_now_add=True)
-    completed_at = models.DateTimeField(null=True)
+    canceled_by = models.CharField(max_length=20, choices=[('buyer', 'Buyer'), ('seller', 'Seller')], null=True, blank=True) # edge case if both cancel at the same time
+
+    def __str__(self):
+        return f"Transaction {self.id} for {self.book.title}"
+
+    class Meta:
+        ordering: ['created_at']

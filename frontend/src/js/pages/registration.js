@@ -2,25 +2,28 @@
 import { apiRequest } from '../api/auth.js';
 import { isAuthenticated } from '../api/auth.js';
 
+import { renderFooter } from '../partials/footer.js';
+
 export default (app) => {
+
     if (isAuthenticated()) {
         window.location.href = '/home';
         return;
     }
 
-    app.innerHTML = `
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    app.innerHTML += `
+       <nav class="navbar navbar-expand-lg navbar-light bg-light">
             <div class="container">
                 <a class="navbar-brand" href="/">Unibookswap</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav ms-auto">
-                        <li class="nav-item"><a class="nav-link" href="/register">Register</a></li>
-                        <li class="nav-item"><a class="nav-link" href="/login">Login</a></li>
-                        <li class="nav-item"><a class="nav-link" href="/search">Search</a></li>
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                            <li class="nav-item"><a class="nav-link" href="/register">Register</a></li>
+                            <li class="nav-item"><a class="nav-link" href="/login">Forgot Password?</a></li>
                     </ul>
+                    
                 </div>
             </div>
         </nav>
@@ -44,6 +47,7 @@ export default (app) => {
             </form>
         </div>
     `;
+    renderFooter(app);
 
     document.getElementById('register-form').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -61,7 +65,8 @@ export default (app) => {
         try {
             const response = await apiRequest('http://localhost:8000/api/auth/registration/', {
                 method: 'POST',
-                body: JSON.stringify({ email, password1, password2 })
+                body: JSON.stringify({ email, password1, password2 }),
+		skipAuth: true
             });
             errorDiv.classList.add('d-none');
             window.location.href = '/login';

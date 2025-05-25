@@ -1,0 +1,13 @@
+// frontend/vite.config.js
+export default {
+    root: '/home/lordkith/Eng. Projects/CMPE_312_Project/frontend/src',
+    server: {
+        proxy: {
+            '/api': 'http://localhost:8000',
+        },
+    },
+    build: {
+        outDir: '../dist',
+        emptyOutDir: true,
+    },
+};

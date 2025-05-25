@@ -1,55 +1,67 @@
-// src/js/pages/search.js
+import { isAuthenticated, apiRequest } from '../api/auth.js';
+import { renderHeader } from '../partials/header.js';
 import { getBooks } from '../api/books.js';
+import { renderFooter } from '../partials/footer.js';
 
 export default async (app) => {
-    app.innerHTML = `
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <div class="container">
-                <a class="navbar-brand" href="/">Unibookswap</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav ms-auto">
-                        <li class="nav-item"><a class="nav-link" href="/search">Search</a></li>
-                        <li class="nav-item"><a class="nav-link" href="/book-add">Add Book</a></li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
+     await renderHeader(app);
+      if (!isAuthenticated()) {
+        window.location.href = '/login';
+        return;
+    }
+     
+
+    let userId = null;
+
+    try {
+        const user = await apiRequest('http://localhost:8000/api/users/me/');
+	console.log(`The user is ${user}`);
+        userId = user.id;
+    } catch (error) {
+        if (error.message.includes('Authentication')) {
+            window.location.href = '/login';
+            return;
+        }
+    }
+
+    app.innerHTML += `
         <div class="container mt-5">
-            <h1 class="text-center">Search Books</h1>
+            <h1 class="text-center pb-3">Search Available Books</h1>
             <div class="mb-3">
-                <input type="text" class="form-control" id="search-input" placeholder="Search by title or course...">
+                <select id="filter-select" class="form-select mb-2" style="max-width: 300px;">
+                    <option value="all">All Books</option>
+                    <option value="my">My Books</option>
+                    <option value="others">Others' Books</option>
+                </select>
+                <input type="text" class="form-control p-3" id="search-input" placeholder="Search by title or course...">
             </div>
             <div id="error" class="alert alert-danger d-none"></div>
             <div id="book-grid" class="row row-cols-1 row-cols-md-3 g-4"></div>
         </div>
     `;
+    renderFooter(app);
 
     const searchInput = document.getElementById('search-input');
     const errorDiv = document.getElementById('error');
     const bookGrid = document.getElementById('book-grid');
+    const filterSelect = document.getElementById('filter-select');
 
-    const updateBooks = async (query = '') => {
+    const updateBooks = async (query = '', filter = 'all') => {
         bookGrid.innerHTML = '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>';
 
         try {
-            const books = await getBooks();
+	    console.log(`The userid is ${userId}`);
+            const books = await getBooks(filter, userId, query);
             bookGrid.innerHTML = '';
-            const filteredBooks = books.filter(book =>
-                book.title.toLowerCase().includes(query.toLowerCase()) ||
-                book.course?.toLowerCase().includes(query.toLowerCase())
-            );
-            if (filteredBooks.length === 0) {
+            if (books.length === 0) {
                 bookGrid.innerHTML = '<div class="alert alert-warning">No books found</div>';
                 return;
             }
-            filteredBooks.forEach(book => {
+            books.forEach(book => {
                 bookGrid.innerHTML += `
                     <div class="col">
-                        <div class="card h-100 shadow-sm">
-                            <img src="https://via.placeholder.com/300x200?text=${book.title}" class="card-img-top" alt="${book.title}">
+                        <div class="card h-100 shadow-sm p-3" onclick="window.location.href='/book-view?id=${book.id}'" style="cursor: pointer;">
+                            <img src="${book.cover_image || 'https://miro.medium.com/v2/resize:fit:1400/1*s_BUOauMhzRZL0dBiCExww.png'}" class="card-img-top" alt="${book.title}">
                             <div class="card-body">
                                 <h5 class="card-title">${book.title}</h5>
                                 <p class="card-text">${book.course || 'N/A'} - $${book.price || '0.00'}</p>
@@ -65,9 +77,12 @@ export default async (app) => {
     };
 
     searchInput.addEventListener('input', (e) => {
-        updateBooks(e.target.value);
+        updateBooks(e.target.value, filterSelect.value);
     });
 
-    // Initial load
+    filterSelect.addEventListener('change', (e) => {
+        updateBooks(searchInput.value, e.target.value);
+    });
+
     await updateBooks();
 };

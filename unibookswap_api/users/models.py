@@ -32,13 +32,14 @@ class User(AbstractUser):
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     last_login = models.DateTimeField(null=True, blank=True)
+    profile_picture = models.ImageField(upload_to='profile_pics/', default='profile_pics/default.png', blank=True, null=True)
     objects = UserManager()
 
     USERNAME_FIELD = 'email';
     REQUIRED_FIELDS = [] 
 
     def __str__(self):
-        return self.email
+        return str(self.id)
 
     def has_perm(self, perm, obj=None):
         return True

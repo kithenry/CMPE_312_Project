@@ -38,13 +38,14 @@ export const login = async (email, password) => {
 
 // Refresh token
 export const refreshToken = async () => {
-    const refresh = getRefreshToken();
+    const refreshToken = getRefreshToken();
     if (!refresh) throw new Error('No refresh token available');
 
-    const response = await fetch(`${API_URL}auth/refresh/`, {
+    const response = await fetch(`${API_URL}auth/token/refresh/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refresh })
+        body: JSON.stringify({ refresh : refreshToken }),
+	credentials: 'include',
     });
     const data = await response.json();
     if (response.ok) {
@@ -74,9 +75,17 @@ export const apiRequest = async (url, options = {}) => {
     const accessToken = getAccessToken();
     const headers = {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${accessToken}`,
+        //'Authorization': `Bearer ${accessToken}`,
+        //...options.headers,
+	...(options.skipAuth ? {} : (accessToken ? { 'Authorization': `Bearer ${accessToken}` } : {})),
         ...options.headers
     };
+    
+    if (options.body instanceof FormData) {
+        delete headers['Content-Type'];
+    } else {
+        headers['Content-Type'] = 'application/json';
+    }
 
     let response = await fetch(url, { ...options, headers });
     if (response.status === 401) {

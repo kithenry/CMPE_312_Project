@@ -11,7 +11,8 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
-
+import os
+from datetime import timedelta
 
 #smtp config 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -29,6 +30,28 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
     #       'dj_rest_auth.jwt_auth.JSONWebTokenAuthentication',
 #    ],
 #}
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+if not os.path.exists(MEDIA_ROOT):
+    os.makedirs(MEDIA_ROOT)
+
+
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',   # Allow registration & login without token
+    ],
+}
+
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -61,6 +84,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'rest_framework.authtoken',
+    'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
     'dj_rest_auth',
     'dj_rest_auth.registration',
     'allauth',
@@ -70,19 +95,36 @@ INSTALLED_APPS = [
     'books',
     'transactions',
     'chat',
+    'ratings.apps.RatingsConfig',
+    'channels',
 ]
 
-SITE_ID = 1
 
+ASGI_APPLICATION = 'unibookswap.asgi.application'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('127.0.0.1', 6379)],
+        },
+    },
+}
+
+
+SITE_ID = 1
 REST_AUTH = {
     'USE_JWT': True,
     'JWT_AUTH_COOKIE': 'jwt-auth',
     'JWT_AUTH_HTTPONLY': False,
+    'JWT_AUTH_REFRESH_COOKIE': 'jwt-refresh-token'
+
 }
 
 ACCOUNT_AUTHENTICATION_METHOD = 'email' # Authenticate by email 
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = False 
+ACCOUNT_EMAIL_VERIFICATION = 'optional'
 
 AUTHENTICATION_BACKENDS = [
     'allauth.account.auth_backends.AuthenticationBackend',
@@ -102,8 +144,65 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-        'http://localhost:3000'
+        'http://localhost:3000',
+        'http://localhost:5173'
         ]
+
+CORS_ALLOW_METHODS = [
+        'GET',
+        'POST',
+        'OPTIONS',
+        'PUT',
+        'PATCH',
+        'DELETE'
+        ]
+
+
+CORS_ALLOW_HEADERS = [
+        'Authorization',
+        'Content-Type'
+        ]
+
+CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOW_ALL_ORIGINS = True
+
+
+# unibookswap/settings.py
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'stream': 'ext://sys.stdout',  # Explicitly set to stdout
+            'formatter': 'verbose',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',  # Ensure INFO level is active
+    },
+    'loggers': {
+        '': {  # Root logger
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'books': {  # Specific logger for books app
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}
 
 ROOT_URLCONF = 'unibookswap.urls'
 
@@ -170,6 +269,47 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': True,  # Issue new refresh token on refresh
+    'BLACKLIST_AFTER_ROTATION': True,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+}
+
+
+# LOGGING
+
+'''LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '[{asctime}] {levelname} {name} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': BASE_DIR / 'django_debug.log',
+            'formatter': 'verbose',
+        },
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file', 'console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+}
+'''
 
 
 # Internationalization

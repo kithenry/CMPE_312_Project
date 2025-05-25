@@ -1,0 +1,27 @@
+color palette source: https://www.color-hex.com/color-palette/79140
+font: lato Light
+header color: #ffd767
+button bg
+	- sign in:#382110
+	- others: #f5d47a
+border-radius-universal
+	- buttons: 3px
+	- all else:  24px
+link color; #b8e2f2
+footer color: #f9f8f4
+
+
+what to design
+- buttons
+- header
+- table
+- book cards
+
+
+
+cat resources
+<link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+<script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+
+https://bootsnipp.com/snippets/y8e4W
